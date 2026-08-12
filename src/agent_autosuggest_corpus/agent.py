@@ -116,8 +116,15 @@ def main() -> int:
     seen: list[str] = []
     kept = rejected = 0
     for index in range(args.examples):
-        avoid = ("\n\nAlready used, pick something further away:\n"
-                 + "\n".join(f"- {s}" for s in seen)) if seen else ""
+        # Tell it what is off-limits BEFORE it spends a call. 12 of 40 generations were rejected
+        # for landing on an industry already in the eval set — the guard caught every one, but
+        # rejecting after the fact wastes the call and teaches the model nothing.
+        taken = sorted(i for i in guard.industries if i)[:60]
+        avoid = "\n\nThese industries belong to the EVALUATION set and are off-limits — a training example in any of them would make the eval meaningless:\n" + \
+                ", ".join(taken)
+        if seen:
+            avoid += ("\n\nAlready generated here, pick something further away:\n"
+                      + "\n".join(f"- {s}" for s in seen))
         response = client.chat.completions.create(model=args.model, messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": "Produce one training example." + avoid}])
