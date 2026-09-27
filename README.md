@@ -69,3 +69,19 @@ drift.
 ## Status
 
 Nothing generated yet.
+
+## In lake (lake#263)
+
+A library agent of lake: a person asks it for one training example ("a quality manager at a
+contract bakery"). One turn is one `generate_one` (the loop body of the CLI), steered by the request
+and checked exactly as the CLI checks it: the contamination guard against the eval set, then the
+example's defects, with one retry. It answers `{reply, result: {kind: autosuggest_example,
+example}}` and **writes nothing to the corpus**; growing the corpus stays the CLI's.
+
+- `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` is 503 without
+  the eval set; `POST /v1/turn`).
+- `lake_bus.py`: takes turns from lake's agent bus with its own `AGENT_BUS_TOKEN`.
+- `Dockerfile`: private image `oramasearch/agent-autosuggest-corpus`; the eval set is the named
+  build context `evals` (`--local evals=../agent-eval-generator/evals/profiles --opt
+  context:evals=local:evals`).
+- Tests: `uv run --group dev pytest`.
