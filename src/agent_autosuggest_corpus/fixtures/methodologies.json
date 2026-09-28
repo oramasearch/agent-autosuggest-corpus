@@ -1,0 +1,16 @@
+{
+  "methodologies": [
+    {
+      "id": "M-1",
+      "name": "Churn / GBDT classification",
+      "family": "classification",
+      "model_kinds": ["gbdt"],
+      "solutions": [],
+      "inputs": [],
+      "outputs": [],
+      "metrics": [],
+      "runnable": true,
+      "partial": false
+    }
+  ]
+}

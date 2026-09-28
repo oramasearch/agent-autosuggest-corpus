@@ -111,12 +111,15 @@ def run_task(bus: LakeBus, handle: Callable[[dict[str, Any]], dict[str, Any]],
              claimed: dict[str, Any]) -> dict[str, Any]:
     """One claimed task: the turn runs, and its answer goes back on the bus. Returns the answer."""
     task_id = claimed["task_id"]
+    turn = dict(claimed.get("body") or {})
+    if claimed.get("customer_id") and not turn.get("customer_id"):
+        turn["customer_id"] = claimed["customer_id"]
     try:
         bus.publish(task_id, "progress", "Working on it")
     except BusError as error:
         _log(task=task_id, progress_not_published=str(error))
     try:
-        answer = handle(claimed.get("body") or {})
+        answer = handle(turn)
     except Exception as error:  # a failed turn is an answer, not a dead worker
         answer = {"ok": False, "error": f"{type(error).__name__}: {error}"}
     if answer.get("ok"):

@@ -35,7 +35,8 @@ drift.
   "suggested": [{
     "intent": "predict which accounts are likely to leave in the next 90 days",
     "solution": "S-1",                    // the catalogue module
-    "methodology": "gbdt",
+    "methodology": "M-1",                // the engine registry id
+    "runnable": true,                     // copied from list_methodologies
     "why_this_data_supports_it": "accounts.churn_date gives a label; ...",
     "required_first": ["entity resolution across crm and billing"],
     "pipeline_shape": {                   // the correctness profile it must satisfy
@@ -46,7 +47,9 @@ drift.
     "fits_the_constraint": "40 accounts a month, so the output is a ranked top-40"
   }],
   "declined": [{
-    "intent": "forecast usage per feature",
+    "intent": "predict account churn from product usage",
+    "methodology": "M-1",
+    "runnable": true,
     "reason": "product.telemetry is discovered but not captured",
     "answer": "capture it first"          // NOT 'cannot be done'
   }]
@@ -68,7 +71,28 @@ drift.
 
 ## Status
 
-Nothing generated yet.
+The active v2 corpus contains one replay-validated example. The previous v1 rows were removed from
+the active corpus because their free-form methodology labels could not prove engine support.
+
+## Methodologies the agent teaches
+
+Every suggested and declined opportunity records an `M-n` methodology id. In lake, the service
+reads `list_methodologies` through `workspace_query` at the start of every turn and treats that
+workspace registry as authoritative. Runnable entries may be suggested. Non-runnable entries are
+moved to `declined` with `not supported yet`, a `needs M-n` reason, and the registry's tracking
+issue. A runnable methodology whose input needs reshaping is declined as `transform first`.
+
+Standalone generation has no workspace, so it reads the checked-in methodology fixture. The
+fixture is deliberately conservative and currently permits only M-1. If an older workspace answers
+`unknown_capability`, the documented compatibility rule also permits only M-1 and the service says
+that it used the older-engine behavior. Other registry failures stop generation instead of falling
+back silently.
+
+Replay the active corpus against the fixture with:
+
+```sh
+uv run agent-autosuggest-corpus --replay corpus/autosuggest-sft-v2.jsonl
+```
 
 ## In lake (lake#263)
 
@@ -80,6 +104,8 @@ example}}` and **writes nothing to the corpus**; growing the corpus stays the CL
 
 - `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` is 503 without
   the eval set; `POST /v1/turn`).
+- `methodologies.py`: reads the live registry, applies the M-1 old-engine fallback, filters
+  generated suggestions, and validates replayed rows.
 - `lake_bus.py`: takes turns from lake's agent bus with its own `AGENT_BUS_TOKEN`.
 - `Dockerfile`: private image `oramasearch/agent-autosuggest-corpus`; the eval set is the named
   build context `evals` (`--local evals=../agent-eval-generator/evals/profiles --opt
