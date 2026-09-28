@@ -93,6 +93,37 @@ def _defects(example: dict[str, Any]) -> list[str]:
     return problems
 
 
+def generate_one(client: Any, model: str, guard: EvalGuard, request: str = "",
+                 seen: list[str] | None = None) -> tuple[dict[str, Any] | None, str]:
+    """One training example, or None and why it was not kept (unparseable, contaminated by the
+    eval set, or defective). A person's `request` (lake#263) steers what it is about."""
+    system = (PROMPTS / f"{PROMPT_VERSION}.md").read_text()
+    # Tell it what is off-limits BEFORE it spends a call. 12 of 40 generations were rejected
+    # for landing on an industry already in the eval set — the guard caught every one, but
+    # rejecting after the fact wastes the call and teaches the model nothing.
+    taken = sorted(i for i in guard.industries if i)[:60]
+    avoid = ("\n\nThese industries belong to the EVALUATION set and are off-limits — a training "
+             "example in any of them would make the eval meaningless:\n" + ", ".join(taken))
+    if seen:
+        avoid += ("\n\nAlready generated here, pick something further away:\n"
+                  + "\n".join(f"- {s}" for s in seen))
+    ask = "Produce one training example." + (f" The person asking wants: {request}" if request else "")
+    response = client.chat.completions.create(model=model, messages=[
+        {"role": "system", "content": system},
+        {"role": "user", "content": ask + avoid}])
+    example = _parse(response.choices[0].message.content)
+    if example is None:
+        return None, "unparseable — skipped"
+    overlap = guard.contamination(example)
+    if overlap:
+        return None, f"{example['profile_id']} CONTAMINATED · {overlap}"
+    defects = _defects(example)
+    if defects:
+        return None, f"{example['profile_id']} REJECTED · {defects[0]}"
+    example["prompt_version"] = PROMPT_VERSION
+    return example, "kept"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate Auto-Suggest SFT examples.")
     parser.add_argument("--examples", type=int, default=5)
@@ -109,42 +140,17 @@ def main() -> int:
         return 2
 
     client = OpenAI()
-    system = (PROMPTS / f"{PROMPT_VERSION}.md").read_text()
     args.out.mkdir(parents=True, exist_ok=True)
     path = args.out / f"autosuggest-sft-{PROMPT_VERSION}.jsonl"
 
     seen: list[str] = []
     kept = rejected = 0
     for index in range(args.examples):
-        # Tell it what is off-limits BEFORE it spends a call. 12 of 40 generations were rejected
-        # for landing on an industry already in the eval set — the guard caught every one, but
-        # rejecting after the fact wastes the call and teaches the model nothing.
-        taken = sorted(i for i in guard.industries if i)[:60]
-        avoid = "\n\nThese industries belong to the EVALUATION set and are off-limits — a training example in any of them would make the eval meaningless:\n" + \
-                ", ".join(taken)
-        if seen:
-            avoid += ("\n\nAlready generated here, pick something further away:\n"
-                      + "\n".join(f"- {s}" for s in seen))
-        response = client.chat.completions.create(model=args.model, messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": "Produce one training example." + avoid}])
-        example = _parse(response.choices[0].message.content)
+        example, reason = generate_one(client, args.model, guard, seen=seen)
         if example is None:
-            print(f"[{index+1}/{args.examples}] unparseable — skipped"); rejected += 1; continue
-
-        overlap = guard.contamination(example)
-        if overlap:
-            print(f"[{index+1}/{args.examples}] {example['profile_id']} CONTAMINATED · {overlap}")
+            print(f"[{index+1}/{args.examples}] {reason}")
             rejected += 1
             continue
-
-        defects = _defects(example)
-        if defects:
-            print(f"[{index+1}/{args.examples}] {example['profile_id']} REJECTED · {defects[0]}")
-            rejected += 1
-            continue
-
-        example["prompt_version"] = PROMPT_VERSION
         with path.open("a") as handle:
             handle.write(json.dumps(example) + "\n")
         seen.append(f"{example['profile_id']} ({example.get('industry')})")
