@@ -238,7 +238,9 @@ def defects(example: dict[str, Any], registry: Registry) -> list[str]:
         if entry is not None and entry.get("runnable") is not True:
             _check_unsupported(item, where, entry, problems)
         if entry is not None and entry.get("runnable") is True:
-            if item.get("answer") == "not supported yet":
+            reason = str(item.get("reason") or "")
+            names_methodology = f"needs {item.get('methodology')}" in reason
+            if item.get("answer") == "not supported yet" and names_methodology:
                 problems.append(
                     f"{where} must not call runnable {item.get('methodology')} unsupported"
                 )

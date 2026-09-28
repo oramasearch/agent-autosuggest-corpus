@@ -1,0 +1,62 @@
+{
+  "solutions": [
+    {
+      "id": "S-1",
+      "name": "Churn & Retention",
+      "promise": "Find who may leave, explain why, and route the right retention work.",
+      "use_case": "Identify preventable churn early enough for a governed intervention.",
+      "composition": [
+        {"methodology": "M-1", "role": "primary", "minimum_level": 1},
+        {"methodology": "M-2", "role": "foundation", "minimum_level": 1},
+        {"methodology": "M-3", "role": "foundation", "minimum_level": 1},
+        {"methodology": "M-5", "role": "attachable", "minimum_level": 2},
+        {"methodology": "M-6", "role": "attachable", "minimum_level": 3},
+        {"methodology": "M-8", "role": "attachable", "minimum_level": 4}
+      ],
+      "pipeline_order": ["M-2", "M-1", "M-3", "M-5", "M-6", "M-8"],
+      "required_data_roles": [
+        {"role": "entity", "required": true, "description": "customer, account, or household"},
+        {"role": "label", "required": true, "description": "churn event and outcome window"},
+        {"role": "time", "required": true, "description": "feature cutoff and label window"},
+        {"role": "treatment", "required": false, "description": "retention action and no-contact cell"}
+      ],
+      "capability_levels": [
+        {"level": 1, "name": "CL-1", "description": "propensity, reasons, segments, holdout and report"},
+        {"level": 2, "name": "CL-2", "description": "add survival timing"},
+        {"level": 3, "name": "CL-3", "description": "add uplift targeting"},
+        {"level": 4, "name": "CL-4", "description": "add treatment arbitration"}
+      ],
+      "status": "catalogue",
+      "runnable": true,
+      "issue": "https://github.com/oramasearch/zetta/issues/1102"
+    },
+    {
+      "id": "S-2",
+      "name": "Lead & Opportunity Scoring",
+      "promise": "Prioritize the leads and opportunities most worth timely sales attention.",
+      "use_case": "Concentrate finite sales capacity while preserving exploration and coverage.",
+      "composition": [
+        {"methodology": "M-1", "role": "primary", "minimum_level": 1},
+        {"methodology": "M-2", "role": "foundation", "minimum_level": 1},
+        {"methodology": "M-3", "role": "foundation", "minimum_level": 1},
+        {"methodology": "M-6", "role": "attachable", "minimum_level": 3}
+      ],
+      "pipeline_order": ["M-2", "M-1", "M-3", "M-6"],
+      "required_data_roles": [
+        {"role": "entity", "required": true, "description": "lead, contact, account, and opportunity hierarchy"},
+        {"role": "label", "required": true, "description": "stage conversion in a signed window"},
+        {"role": "time", "required": true, "description": "point-in-time CRM field history"},
+        {"role": "treatment", "required": false, "description": "worked, routed, or nurtured action"}
+      ],
+      "capability_levels": [
+        {"level": 1, "name": "CL-1", "description": "scoring with queues and SLAs"},
+        {"level": 2, "name": "CL-2", "description": "add opportunity risk"},
+        {"level": 3, "name": "CL-3", "description": "add worked-lead incrementality"},
+        {"level": 4, "name": "CL-4", "description": "add value-weighted routing"}
+      ],
+      "status": "catalogue",
+      "runnable": false,
+      "issue": "https://github.com/oramasearch/zetta/issues/1102"
+    }
+  ]
+}

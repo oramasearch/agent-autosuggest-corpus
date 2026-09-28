@@ -25,7 +25,7 @@ fixture is data rather than a Python list so a fixture update is reviewable on i
 
 ## Generation contract
 
-Prompt v2 receives the selected registry as context and requires an `M-n` id on every suggested
+Prompt v3 receives the selected registry as context and requires an `M-n` id on every suggested
 and declined opportunity. After model output is parsed, the generator copies each entry's current
 `runnable` value from the registry. It then:
 
@@ -41,10 +41,12 @@ Unknown methodology ids fail validation. They are not guessed or mapped from lab
 
 The same validation runs when stored JSONL is replayed. It rejects a suggested method when the
 selected registry does not contain it or does not mark it runnable. It also checks that unsupported
-declines name both the M-n id and its tracking issue.
+methodology declines name both the M-n id and its tracking issue. A solution-level refusal can say
+`not supported yet` while its primary methodology is runnable; the `needs S-n` reason distinguishes
+that case from an unsupported methodology.
 
 ```sh
-uv run agent-autosuggest-corpus --replay corpus/autosuggest-sft-v2.jsonl
+uv run agent-autosuggest-corpus --replay corpus/autosuggest-sft-v3.jsonl
 ```
 
 The old v1 corpus was removed from the active corpus because its free-form labels could not meet

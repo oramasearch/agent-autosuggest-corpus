@@ -23,8 +23,13 @@ from agent_autosuggest_corpus.methodologies import FIXTURE, CapabilityError, Reg
 from agent_autosuggest_corpus.methodologies import defects as methodology_defects
 from agent_autosuggest_corpus.methodologies import enforce as enforce_methodologies
 from agent_autosuggest_corpus.methodologies import load_fixture
+from agent_autosuggest_corpus.solutions import FIXTURE as SOLUTION_FIXTURE
+from agent_autosuggest_corpus.solutions import Registry as SolutionRegistry
+from agent_autosuggest_corpus.solutions import defects as solution_defects
+from agent_autosuggest_corpus.solutions import enforce as enforce_solutions
+from agent_autosuggest_corpus.solutions import load_fixture as load_solution_fixture
 
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v3"
 PROMPTS = Path(__file__).parent / "prompts"
 
 
@@ -40,9 +45,14 @@ def _parse(text: str | None) -> dict[str, Any] | None:
     return example if example.get("profile_id") and example.get("project_profile") else None
 
 
-def _defects(example: dict[str, Any], registry: Registry) -> list[str]:
+def _defects(
+    example: dict[str, Any],
+    registry: Registry,
+    solution_registry: SolutionRegistry,
+) -> list[str]:
     """Cheap checks that a training example is worth learning from."""
     problems = methodology_defects(example, registry)
+    problems.extend(solution_defects(example, solution_registry))
     # A constraint that narrows nothing makes the whole example untestable: the suggestion cannot
     # be judged against it, and the model learns that constraints are decoration.
     for constraint in (example.get("persona") or {}).get("constraints", []):
@@ -55,9 +65,12 @@ def _defects(example: dict[str, Any], registry: Registry) -> list[str]:
                             f"answer is")
     project = example.get("project_profile") or {}
     suggested = project.get("suggested") or []
-    if not suggested:
+    runnable_solutions = [
+        entry for entry in solution_registry.entries if entry.get("runnable") is True
+    ]
+    if runnable_solutions and not suggested:
         problems.append("no suggestion at all")
-    if not project.get("declined"):
+    if solution_registry.entries and not project.get("declined"):
         # A model that never declines will suggest something worthless when asked.
         problems.append("nothing declined — declining is a first-class output")
     for item in suggested:
@@ -78,8 +91,10 @@ def _defects(example: dict[str, Any], registry: Registry) -> list[str]:
         # The catalogue id, not a restatement of the intent. "Predict high-value purchase
         # likelihood" is the intent again; S-2 is a module with a known correctness profile, and
         # only the id lets the project agent look up what the pipeline must satisfy.
-        if not re.fullmatch(r"(S|M|UC)-\d+", str(item.get("solution", "")).strip()):
-            problems.append(f"solution `{item.get('solution')}` is not a catalogue id (S-n/UC-n)")
+        if not re.fullmatch(r"(S|B|M|UC)-\d+", str(item.get("solution", "")).strip()):
+            problems.append(
+                f"solution `{item.get('solution')}` is not a catalogue id (S-n/B-n/UC-n)"
+            )
         # Restating the constraint is not showing it was honoured. "Provides actionable insights"
         # against a constraint of "must provide actionable insights" says nothing about the output.
         fits = str(item.get("fits_the_constraint", "")).lower()
@@ -110,11 +125,17 @@ def generate_one(
     request: str = "",
     seen: list[str] | None = None,
     registry: Registry | None = None,
+    solution_registry: SolutionRegistry | None = None,
 ) -> tuple[dict[str, Any] | None, str]:
     """One training example, or None and why it was not kept (unparseable, contaminated by the
     eval set, or defective). A person's `request` (lake#263) steers what it is about."""
     registry = registry or load_fixture()
-    system = (PROMPTS / f"{PROMPT_VERSION}.md").read_text() + registry.context()
+    solution_registry = solution_registry or load_solution_fixture()
+    system = (
+        (PROMPTS / f"{PROMPT_VERSION}.md").read_text()
+        + registry.context()
+        + solution_registry.context()
+    )
     # Tell it what is off-limits BEFORE it spends a call. 12 of 40 generations were rejected
     # for landing on an industry already in the eval set — the guard caught every one, but
     # rejecting after the fact wastes the call and teaches the model nothing.
@@ -135,14 +156,19 @@ def generate_one(
     if overlap:
         return None, f"{example['profile_id']} CONTAMINATED · {overlap}"
     example = enforce_methodologies(example, registry)
-    defects = _defects(example, registry)
+    example = enforce_solutions(example, solution_registry)
+    defects = _defects(example, registry, solution_registry)
     if defects:
         return None, f"{example['profile_id']} REJECTED · {defects[0]}"
     example["prompt_version"] = PROMPT_VERSION
     return example, "kept"
 
 
-def replay(path: Path, registry: Registry) -> list[str]:
+def replay(
+    path: Path,
+    registry: Registry,
+    solution_registry: SolutionRegistry,
+) -> list[str]:
     """Validate stored examples against the same registry contract as generation."""
     problems: list[str] = []
     try:
@@ -157,7 +183,7 @@ def replay(path: Path, registry: Registry) -> list[str]:
         except json.JSONDecodeError as error:
             problems.append(f"{path}:{number}: invalid JSON: {error.msg}")
             continue
-        for defect in _defects(example, registry):
+        for defect in _defects(example, registry, solution_registry):
             problems.append(f"{path}:{number}: {defect}")
     return problems
 
@@ -170,18 +196,20 @@ def main() -> int:
     parser.add_argument("--eval-profiles", type=Path,
                         default=Path(os.environ.get("EVAL_PROFILES", "")))
     parser.add_argument("--methodologies-fixture", type=Path, default=FIXTURE)
+    parser.add_argument("--solutions-fixture", type=Path, default=SOLUTION_FIXTURE)
     parser.add_argument("--replay", type=Path,
-                        help="validate a JSONL corpus against the methodologies fixture")
+                        help="validate a JSONL corpus against both registry fixtures")
     args = parser.parse_args()
 
     try:
         registry = load_fixture(args.methodologies_fixture)
+        solution_registry = load_solution_fixture(args.solutions_fixture)
     except CapabilityError as error:
         print(f"refusing to run: {error}")
         return 2
 
     if args.replay:
-        problems = replay(args.replay, registry)
+        problems = replay(args.replay, registry, solution_registry)
         for problem in problems:
             print(problem)
         if problems:
@@ -203,7 +231,14 @@ def main() -> int:
     seen: list[str] = []
     kept = rejected = 0
     for index in range(args.examples):
-        example, reason = generate_one(client, args.model, guard, seen=seen, registry=registry)
+        example, reason = generate_one(
+            client,
+            args.model,
+            guard,
+            seen=seen,
+            registry=registry,
+            solution_registry=solution_registry,
+        )
         if example is None:
             print(f"[{index+1}/{args.examples}] {reason}")
             rejected += 1

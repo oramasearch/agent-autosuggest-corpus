@@ -31,8 +31,9 @@ Each check exists because something weak got through without it:
 - **Every opportunity records an `M-n` methodology and registry-derived `runnable` value.** Only
   runnable methodologies can remain suggested. Unsupported ones are declined with their engine
   tracking issue, while an input-shape problem says `transform first` and names the transform.
-- **`solution` is a catalogue id** (`S-1`, `UC-13`), never prose — the id is what lets the project
-  agent look up the correctness profile the pipeline must satisfy.
+- **Every opportunity records a registry solution, level, and ordered methodology composition.**
+  Only runnable solutions remain suggested. Unsupported solutions say `needs S-n` and `not
+  supported yet`; input reshaping for a runnable solution says `transform first`.
 - **Constraints narrow the answer.** *"Must provide actionable insights"* is decoration; a real
   constraint carries a number, a prohibition, or an ordering.
 - **`fits_the_constraint` does not restate the constraint** — it says what about the *output*
@@ -45,10 +46,14 @@ Each check exists because something weak got through without it:
 
 ## Limitations — read before using
 
-- **One active v2 example.** Small. The 17 v1 rows were removed because their free-form
-  methodology labels could not be checked against the engine registry.
+- **One active v3 example.** Small. The 17 v1 rows were removed because their free-form
+  methodology labels could not be checked against the engine registry. The v2 row did not carry
+  solution level, runnability, or composition and is no longer active.
 - **Standalone methodology fixture.** Offline generation and replay conservatively permit only
   M-1. Lake service turns use each workspace's live `list_methodologies` response instead.
+- **Standalone solution fixture.** Offline generation and replay permit S-1 and retain S-2 as a
+  deliberate non-runnable example. Lake service turns read each workspace's live solution
+  registry instead.
 - **Roughly half of generations are rejected**, mostly for vague constraints. The rejections are
   genuine and the checks are deliberately strict, but it means yield is low and the kept examples
   skew toward whatever the model finds easy to constrain concretely.

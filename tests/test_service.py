@@ -13,7 +13,7 @@ import pytest
 from agent_autosuggest_corpus import methodologies, service
 from agent_autosuggest_corpus.guard import EvalGuard
 
-EXAMPLE = json.loads(Path("corpus/autosuggest-sft-v2.jsonl").read_text().splitlines()[0])
+EXAMPLE = json.loads(Path("corpus/autosuggest-sft-v3.jsonl").read_text().splitlines()[0])
 METHODOLOGIES = {
     "methodologies": [
         {
@@ -33,6 +33,9 @@ METHODOLOGIES = {
         },
     ]
 }
+SOLUTIONS = json.loads(
+    Path("src/agent_autosuggest_corpus/fixtures/solutions.json").read_text()
+)
 
 
 class Scripted:
@@ -48,8 +51,7 @@ class Scripted:
 
 
 class FakeQuery:
-    def __init__(self, value: dict[str, Any] | None = None, error: str | None = None) -> None:
-        self.value = value
+    def __init__(self, error: str | None = None) -> None:
         self.error = error
         self.calls: list[tuple[str, dict[str, Any]]] = []
 
@@ -57,7 +59,15 @@ class FakeQuery:
         self.calls.append((capability, inputs))
         if self.error:
             raise methodologies.CapabilityError(self.error, "not available")
-        return self.value or {}
+        if capability == "list_methodologies":
+            return METHODOLOGIES
+        if capability == "list_solutions":
+            return SOLUTIONS
+        if capability == "get_solution":
+            identifier = inputs["solution"]
+            entry = next(item for item in SOLUTIONS["solutions"] if item["id"] == identifier)
+            return {"solution": entry}
+        return {}
 
 
 @pytest.fixture
@@ -78,7 +88,7 @@ def guard(tmp_path: Path) -> EvalGuard:
 
 def test_a_runnable_methodology_is_kept_from_the_live_registry(guard: EvalGuard) -> None:
     client = Scripted(json.dumps(EXAMPLE))
-    query = FakeQuery(METHODOLOGIES)
+    query = FakeQuery()
     answer = service.run_turn(
         {"request": "a contract bakery"},
         client,
@@ -88,46 +98,30 @@ def test_a_runnable_methodology_is_kept_from_the_live_registry(guard: EvalGuard)
     )
 
     assert answer["ok"], answer
-    assert query.calls == [("list_methodologies", {})]
+    assert query.calls == [
+        ("list_methodologies", {}),
+        ("list_solutions", {}),
+        ("get_solution", {"solution": "S-1"}),
+        ("get_solution", {"solution": "S-2"}),
+    ]
     assert "a contract bakery" in client.sent[0]["messages"][1]["content"]
     assert '\"id\": \"M-1\"' in client.sent[0]["messages"][0]["content"]
     suggestion = answer["result"]["example"]["project_profile"]["suggested"][0]
     assert suggestion["methodology"] == "M-1"
     assert suggestion["runnable"] is True
     assert answer["result"]["example"]["methodology_registry_source"] == "list_methodologies"
+    assert suggestion["solution"] == "S-1"
+    assert suggestion["level"] == 1
+    assert suggestion["methodologies"] == ["M-2", "M-1", "M-3"]
+    assert answer["result"]["example"]["solution_registry_source"] == (
+        "list_solutions/get_solution"
+    )
 
 
-def test_an_unsupported_methodology_is_declined_with_its_issue(guard: EvalGuard) -> None:
+def test_an_old_engine_has_m1_but_no_solutions_and_says_so(guard: EvalGuard) -> None:
     candidate = copy.deepcopy(EXAMPLE)
-    unsupported = copy.deepcopy(candidate["project_profile"]["suggested"][0])
-    unsupported.update(
-        {
-            "intent": "segment employees into intervention cohorts",
-            "solution": "S-9",
-            "methodology": "M-3",
-        }
-    )
-    candidate["project_profile"]["suggested"].append(unsupported)
-    answer = service.run_turn(
-        {"request": "employee retention"},
-        Scripted(json.dumps(candidate)),
-        guard,
-        "m",
-        methodology_query=FakeQuery(METHODOLOGIES),
-    )
-
-    assert answer["ok"], answer
-    project = answer["result"]["example"]["project_profile"]
-    assert [item["methodology"] for item in project["suggested"]] == ["M-1"]
-    declined = next(item for item in project["declined"] if item["methodology"] == "M-3")
-    assert declined["answer"] == "not supported yet"
-    assert declined["runnable"] is False
-    assert "needs M-3" in declined["reason"]
-    assert "zetta#1042" in declined["reason"]
-
-
-def test_an_old_engine_falls_back_to_m1_and_says_so(guard: EvalGuard) -> None:
-    client = Scripted(json.dumps(EXAMPLE))
+    candidate["project_profile"] = {"suggested": [], "declined": []}
+    client = Scripted(json.dumps(candidate))
     query = FakeQuery(error="unknown_capability")
     answer = service.run_turn(
         {"request": "employee retention"},
@@ -138,9 +132,14 @@ def test_an_old_engine_falls_back_to_m1_and_says_so(guard: EvalGuard) -> None:
     )
 
     assert answer["ok"], answer
-    assert query.calls == [("list_methodologies", {})]
+    assert query.calls == [("list_methodologies", {}), ("list_solutions", {})]
     assert '\"old_engine\": true' in client.sent[0]["messages"][0]["content"]
     assert "only M-1" in answer["reply"]
+    assert "does not deploy the solution registry" in answer["reply"]
+    assert answer["result"]["example"]["project_profile"] == {
+        "suggested": [],
+        "declined": [],
+    }
 
 
 def test_an_example_from_the_eval_set_is_never_answered(guard: EvalGuard) -> None:
@@ -154,7 +153,7 @@ def test_an_example_from_the_eval_set_is_never_answered(guard: EvalGuard) -> Non
         Scripted(json.dumps(leaked), json.dumps(leaked)),
         guard,
         "m",
-        methodology_query=FakeQuery(METHODOLOGIES),
+        methodology_query=FakeQuery(),
     )
     assert not answer["ok"]
     assert "CONTAMINATED" in answer["error"]
@@ -166,7 +165,7 @@ def test_without_the_eval_set_it_writes_nothing(tmp_path: Path) -> None:
         Scripted(),
         EvalGuard(tmp_path),
         "m",
-        methodology_query=FakeQuery(METHODOLOGIES),
+        methodology_query=FakeQuery(),
     )
     assert not answer["ok"]
     assert "eval set" in answer["error"]
