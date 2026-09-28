@@ -21,6 +21,7 @@ from openai import OpenAI
 
 from agent_autosuggest_corpus import lake_bus
 from agent_autosuggest_corpus import methodologies
+from agent_autosuggest_corpus import solutions
 from agent_autosuggest_corpus.agent import PROMPT_VERSION, generate_one
 from agent_autosuggest_corpus.guard import EvalGuard
 
@@ -34,6 +35,8 @@ def run_turn(
     model: str | None = None,
     methodology_query: methodologies.Query | None = None,
     methodology_fixture: Path = methodologies.FIXTURE,
+    solution_query: methodologies.Query | None = None,
+    solution_fixture: Path = solutions.FIXTURE,
 ) -> dict[str, Any]:
     request = (turn.get("request") or turn.get("message") or "").strip()
     guard = guard or EvalGuard(Path(os.environ.get("EVAL_PROFILES", "/app/evals/profiles")))
@@ -51,6 +54,17 @@ def run_turn(
             "ok": False,
             "error": f"cannot read methodology registry ({error.code}): {error}",
         }
+    try:
+        solution_registry = solutions.for_turn(
+            turn,
+            query=solution_query or methodology_query,
+            fixture=solution_fixture,
+        )
+    except methodologies.CapabilityError as error:
+        return {
+            "ok": False,
+            "error": f"cannot read solution registry ({error.code}): {error}",
+        }
     model = model or os.environ.get("AUTOSUGGEST_MODEL", os.environ.get("AGENT_MODEL", "gpt-4o"))
     client = client or OpenAI()
     reasons: list[str] = []
@@ -61,6 +75,7 @@ def run_turn(
             guard,
             request=request,
             registry=registry,
+            solution_registry=solution_registry,
         )
         if example is not None:
             project = example.get("project_profile") or {}
@@ -74,6 +89,8 @@ def run_turn(
                        "and was not added to the corpus.")
             if registry.old_engine:
                 reply += " This older workspace engine can run only M-1."
+            if solution_registry.unavailable:
+                reply += " This workspace engine does not deploy the solution registry yet."
             return {"ok": True, "reply": reply,
                     "result": {"kind": "autosuggest_example", "example": example,
                                "prompt_version": PROMPT_VERSION}}

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from agent_autosuggest_corpus import methodologies
+from agent_autosuggest_corpus import methodologies, solutions
 from agent_autosuggest_corpus.agent import replay
 
 
@@ -34,7 +34,8 @@ def test_workspace_query_uses_the_lake_envelope() -> None:
 
 def test_active_corpus_replays_against_the_standalone_fixture() -> None:
     registry = methodologies.load_fixture()
-    assert replay(Path("corpus/autosuggest-sft-v2.jsonl"), registry) == []
+    solution_registry = solutions.load_fixture()
+    assert replay(Path("corpus/autosuggest-sft-v3.jsonl"), registry, solution_registry) == []
 
 
 def test_replay_rejects_a_non_runnable_suggestion(tmp_path: Path) -> None:
@@ -86,5 +87,5 @@ def test_replay_rejects_a_non_runnable_suggestion(tmp_path: Path) -> None:
         + "\n"
     )
 
-    problems = replay(corpus, methodologies.load_fixture(fixture))
+    problems = replay(corpus, methodologies.load_fixture(fixture), solutions.load_fixture())
     assert any("uses non-runnable M-3" in problem for problem in problems)

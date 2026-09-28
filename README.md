@@ -35,7 +35,10 @@ drift.
   "suggested": [{
     "intent": "predict which accounts are likely to leave in the next 90 days",
     "solution": "S-1",                    // the catalogue module
-    "methodology": "M-1",                // the engine registry id
+    "level": 1,                            // a registry capability level
+    "solution_runnable": true,             // copied from list_solutions/get_solution
+    "methodology": "M-1",                // the primary engine methodology
+    "methodologies": ["M-2", "M-1", "M-3"], // registry-derived composition order
     "runnable": true,                     // copied from list_methodologies
     "why_this_data_supports_it": "accounts.churn_date gives a label; ...",
     "required_first": ["entity resolution across crm and billing"],
@@ -48,6 +51,8 @@ drift.
   }],
   "declined": [{
     "intent": "predict account churn from product usage",
+    "solution": "S-1",
+    "level": 1,
     "methodology": "M-1",
     "runnable": true,
     "reason": "product.telemetry is discovered but not captured",
@@ -71,8 +76,25 @@ drift.
 
 ## Status
 
-The active v2 corpus contains one replay-validated example. The previous v1 rows were removed from
-the active corpus because their free-form methodology labels could not prove engine support.
+The active v3 corpus contains one replay-validated example. The prompt and corpus moved from v2 to
+v3 because solution level, runnability, and ordered methodology composition are now part of the
+training contract. Consumers that copy a versioned corpus file must copy
+`autosuggest-sft-v3.jsonl`. The previous v1 rows were removed because their free-form methodology
+labels could not prove engine support; v2 was superseded because it did not record solution
+registry facts.
+
+## Solutions the agent teaches
+
+Every opportunity names a solution, selects one of its capability levels, and records the ordered
+methodologies composed at that level. In lake, the service reads `list_solutions` and hydrates every
+listed entry with `get_solution` through `workspace_query` at the start of every turn. The live
+registry is authoritative: runnable entries can be suggested, while non-runnable entries move to
+`declined` with `not supported yet` and a `needs S-n` reason. A runnable solution whose input needs
+reshaping is declined as `transform first` with the concrete transform.
+
+An older workspace that answers `unknown_capability` has no available solutions. The generator
+does not substitute a built-in list. Standalone generation and replay use the checked-in solution
+fixture described in [`docs/solutions/README.md`](docs/solutions/README.md).
 
 ## Methodologies the agent teaches
 
@@ -91,7 +113,7 @@ back silently.
 Replay the active corpus against the fixture with:
 
 ```sh
-uv run agent-autosuggest-corpus --replay corpus/autosuggest-sft-v2.jsonl
+uv run agent-autosuggest-corpus --replay corpus/autosuggest-sft-v3.jsonl
 ```
 
 ## In lake (lake#263)
@@ -106,6 +128,8 @@ example}}` and **writes nothing to the corpus**; growing the corpus stays the CL
   the eval set; `POST /v1/turn`).
 - `methodologies.py`: reads the live registry, applies the M-1 old-engine fallback, filters
   generated suggestions, and validates replayed rows.
+- `solutions.py`: reads and hydrates the live catalogue, treats an absent capability as an empty
+  catalogue, filters generated suggestions, and validates levels and composition during replay.
 - `lake_bus.py`: takes turns from lake's agent bus with its own `AGENT_BUS_TOKEN`.
 - `Dockerfile`: private image `oramasearch/agent-autosuggest-corpus`; the eval set is the named
   build context `evals` (`--local evals=../agent-eval-generator/evals/profiles --opt

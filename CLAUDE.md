@@ -24,9 +24,12 @@ translation layer that can drift.
 
 Every one was added because something weak got through:
 
-- **`solution` must be a catalogue id** (`S-1`, `UC-13`), not prose. The id is what lets the
+- **`solution` must be a catalogue id** (`S-1`, `B-1`, `UC-13`), not prose. The id is what lets the
   project agent look up the correctness profile; *"Predict high-value purchase likelihood"* is the
   intent restated and tells it nothing.
+- **Solution facts come from the workspace registry.** A suggestion records a registry level and
+  its ordered methodology composition. A non-runnable solution says `needs S-n` and `not supported
+  yet`; an engine without `list_solutions` has no available solutions.
 - **Constraints must narrow the answer.** *"Must provide actionable insights"* is decoration —
   every suggestion claims it. A real constraint carries a number, a prohibition, or an ordering.
 - **`fits_the_constraint` must not restate the constraint.** It says what about the **output**
