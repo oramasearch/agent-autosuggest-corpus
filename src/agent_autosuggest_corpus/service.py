@@ -17,13 +17,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
-from openai import OpenAI
-
 from agent_autosuggest_corpus import lake_bus
 from agent_autosuggest_corpus import methodologies
 from agent_autosuggest_corpus import solutions
 from agent_autosuggest_corpus.agent import PROMPT_VERSION, generate_one
 from agent_autosuggest_corpus.guard import EvalGuard
+from agent_autosuggest_corpus.model import gateway_client
 
 ATTEMPTS = 2
 
@@ -66,7 +65,15 @@ def run_turn(
             "error": f"cannot read solution registry ({error.code}): {error}",
         }
     model = model or os.environ.get("AUTOSUGGEST_MODEL", os.environ.get("AGENT_MODEL", "gpt-4o"))
-    client = client or OpenAI()
+    if client is None:
+        # The model is reached through lake with the turn's own key, which counts its tokens in
+        # the turn's workspace (lake#248); this agent holds no provider key.
+        model_url = turn.get("lake_url") or os.environ.get("LAKE_URL", "")
+        model_key = turn.get("lake_token") or ""
+        if not model_url or not model_key:
+            return {"ok": False, "error": "a turn needs lake_url and its lake_token to reach the "
+                                          "model through lake"}
+        client = gateway_client(model_url, model_key)
     reasons: list[str] = []
     for _ in range(ATTEMPTS):
         example, reason = generate_one(
