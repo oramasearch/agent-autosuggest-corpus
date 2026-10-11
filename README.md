@@ -124,6 +124,13 @@ and checked exactly as the CLI checks it: the contamination guard against the ev
 example's defects, with one retry. It answers `{reply, result: {kind: autosuggest_example,
 example}}` and **writes nothing to the corpus**; growing the corpus stays the CLI's.
 
+**The model is reached through lake** (lake#248, lake `docs/api/model-gateway.md`): in lake every
+call goes to `<lake_url>/openai/v1` with the turn's own `lake_token` as the API key (`model.py`), so
+lake counts its tokens in the turn's workspace and enforces the account's model-token limit. The
+service holds no `OPENAI_API_KEY`, and a turn without a lake credential is refused. Only the batch
+CLI, which runs for no workspace, calls OpenAI directly with your own key.
+
+- `model.py`: the OpenAI client pointed at lake's model gateway with the turn's credential.
 - `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` is 503 without
   the eval set; `POST /v1/turn`).
 - `methodologies.py`: reads the live registry, applies the M-1 old-engine fallback, filters
