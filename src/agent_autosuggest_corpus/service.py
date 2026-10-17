@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+from importlib.metadata import PackageNotFoundError, version as package_version
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,21 @@ from agent_autosuggest_corpus.guard import EvalGuard
 from agent_autosuggest_corpus.model import gateway_client
 
 ATTEMPTS = 2
+
+
+def _version() -> str:
+    try:
+        return package_version("agent-autosuggest-corpus")
+    except PackageNotFoundError:
+        return "unknown"
+
+
+def health() -> tuple[int, dict[str, Any]]:
+    """`GET /healthz`: 503 without the eval set, since no turn can be answered without it."""
+    guard = EvalGuard(Path(os.environ.get("EVAL_PROFILES", "/app/evals/profiles")))
+    return (200 if guard.ids else 503,
+            {"ok": bool(guard.ids), "agent": "agent-autosuggest-corpus", "version": _version(),
+             "eval_profiles": len(guard.ids)})
 
 
 def run_turn(
@@ -119,10 +135,7 @@ def serve() -> int:
 
         def do_GET(self) -> None:  # noqa: N802 (the stdlib's name)
             if self.path == "/healthz":
-                guard = EvalGuard(Path(os.environ.get("EVAL_PROFILES", "/app/evals/profiles")))
-                self._send(200 if guard.ids else 503,
-                           {"ok": bool(guard.ids), "agent": "agent-autosuggest-corpus",
-                            "eval_profiles": len(guard.ids)})
+                self._send(*health())
                 return
             self._send(404, {"ok": False, "error": "not found"})
 

@@ -76,6 +76,9 @@ drift.
 
 ## Status
 
+Current release: [v0.1.0](docs/releases/v0.1.0.md) (release notes for every version are in
+[`docs/releases/`](docs/releases/README.md)).
+
 The active v3 corpus contains one replay-validated example. The prompt and corpus moved from v2 to
 v3 because solution level, runnability, and ordered methodology composition are now part of the
 training contract. Consumers that copy a versioned corpus file must copy
@@ -131,8 +134,8 @@ service holds no `OPENAI_API_KEY`, and a turn without a lake credential is refus
 CLI, which runs for no workspace, calls OpenAI directly with your own key.
 
 - `model.py`: the OpenAI client pointed at lake's model gateway with the turn's credential.
-- `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` is 503 without
-  the eval set; `POST /v1/turn`).
+- `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` reports the
+  version and is 503 without the eval set; `POST /v1/turn`).
 - `methodologies.py`: reads the live registry, applies the M-1 old-engine fallback, filters
   generated suggestions, and validates replayed rows.
 - `solutions.py`: reads and hydrates the live catalogue, treats an absent capability as an empty
@@ -141,4 +144,5 @@ CLI, which runs for no workspace, calls OpenAI directly with your own key.
 - `Dockerfile`: private image `oramasearch/agent-autosuggest-corpus`; the eval set is the named
   build context `evals` (`--local evals=../agent-eval-generator/evals/profiles --opt
   context:evals=local:evals`).
-- Tests: `uv run --group dev pytest`.
+- Tests: `uv run --group dev pytest`; `tests/test_release.py` requires release notes for the
+  version in `pyproject.toml`, which `GET /healthz` also reports as `version`.
