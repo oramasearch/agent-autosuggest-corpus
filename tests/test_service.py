@@ -171,6 +171,17 @@ def test_without_the_eval_set_it_writes_nothing(tmp_path: Path) -> None:
     assert "eval set" in answer["error"]
 
 
+def test_healthz_reports_the_installed_version(tmp_path: Path, monkeypatch) -> None:
+    import tomllib
+    from importlib.metadata import version
+
+    declared = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
+    monkeypatch.setenv("EVAL_PROFILES", str(tmp_path))
+    status, body = service.health()
+    assert status == 503 and not body["ok"]
+    assert body["version"] == version("agent-autosuggest-corpus") == declared
+
+
 def test_a_turn_calls_its_model_through_lakes_gateway_with_the_turns_key(
         guard: EvalGuard, monkeypatch) -> None:
     """lake#248: the model is lake's `/openai/v1`, with the turn's own key, never a provider key."""
