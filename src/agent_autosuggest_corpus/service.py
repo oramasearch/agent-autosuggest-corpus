@@ -17,6 +17,7 @@ from importlib.metadata import PackageNotFoundError, version as package_version
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from agent_autosuggest_corpus import lake_bus
 from agent_autosuggest_corpus import methodologies
@@ -41,6 +42,19 @@ def health() -> tuple[int, dict[str, Any]]:
     return (200 if guard.ids else 503,
             {"ok": bool(guard.ids), "agent": "agent-autosuggest-corpus", "version": _version(),
              "eval_profiles": len(guard.ids)})
+
+
+def lakes_url() -> str:
+    """Lake's address from this service's environment (`LAKE_URL`), the only place a turn's
+    credential is ever sent; empty when unset or not an absolute http(s) URL without user info."""
+    url = os.environ.get("LAKE_URL", "").strip().rstrip("/")
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return ""
+    if parts.scheme.lower() not in ("http", "https") or not parts.hostname or "@" in parts.netloc:
+        return ""
+    return url
 
 
 def run_turn(
@@ -83,12 +97,17 @@ def run_turn(
     model = model or os.environ.get("AUTOSUGGEST_MODEL", os.environ.get("AGENT_MODEL", "gpt-4o"))
     if client is None:
         # The model is reached through lake with the turn's own key, which counts its tokens in
-        # the turn's workspace (lake#248); this agent holds no provider key.
-        model_url = turn.get("lake_url") or os.environ.get("LAKE_URL", "")
+        # the turn's workspace (lake#248); this agent holds no provider key. The address is this
+        # service's LAKE_URL; the turn's own `lake_url` is never used, so the key cannot be sent
+        # to a host the caller names (agent-autosuggest-corpus#13).
+        model_url = lakes_url()
+        if not model_url:
+            return {"ok": False, "error": "LAKE_URL is not set: this agent sends a turn's "
+                                          "credential only to Lake's configured address"}
         model_key = turn.get("lake_token") or ""
-        if not model_url or not model_key:
-            return {"ok": False, "error": "a turn needs lake_url and its lake_token to reach the "
-                                          "model through lake"}
+        if not model_key:
+            return {"ok": False, "error": "a turn needs its lake_token to reach the model "
+                                          "through lake"}
         client = gateway_client(model_url, model_key)
     reasons: list[str] = []
     for _ in range(ATTEMPTS):

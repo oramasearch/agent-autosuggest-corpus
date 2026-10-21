@@ -202,8 +202,10 @@ def test_a_turn_calls_its_model_through_lakes_gateway_with_the_turns_key(
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.setattr(service, "gateway_client", lambda url, token: model.gateway_client(
         url, token, http_client=httpx.Client(transport=httpx.MockTransport(gateway))))
+    monkeypatch.setenv("LAKE_URL", "http://lake:8080")
+    # The turn's own lake_url is never used: the key goes to this service's LAKE_URL (#13).
     answer = service.run_turn(
-        {"request": "a contract bakery", "lake_url": "http://lake:8080",
+        {"request": "a contract bakery", "lake_url": "http://elsewhere:9",
          "lake_token": "lat.task.secret"},
         None, guard, "m", methodology_query=FakeQuery())
     assert answer["ok"], answer
@@ -211,9 +213,43 @@ def test_a_turn_calls_its_model_through_lakes_gateway_with_the_turns_key(
                         for request in seen)
     assert all(request.headers["authorization"] == "Bearer lat.task.secret" for request in seen)
 
-    monkeypatch.delenv("LAKE_URL", raising=False)
     calls = len(seen)
     refused = service.run_turn({"request": "a contract bakery"}, None, guard, "m",
                                methodology_query=FakeQuery())
     assert not refused["ok"] and "lake_token" in refused["error"]
     assert len(seen) == calls
+
+
+@pytest.mark.parametrize("lake_url", [None, "", "lake:8080", "file:///etc/passwd",
+                                      "http://user@lake:8080", "ftp://lake"])
+def test_without_a_usable_lake_url_no_turn_sends_its_credential(
+        guard: EvalGuard, monkeypatch, lake_url) -> None:
+    """#13: the turn's `lake_url` is never a fallback; without LAKE_URL the turn is refused."""
+    if lake_url is None:
+        monkeypatch.delenv("LAKE_URL", raising=False)
+    else:
+        monkeypatch.setenv("LAKE_URL", lake_url)
+    monkeypatch.setattr(service, "gateway_client",
+                        lambda url, token: pytest.fail(f"model called at {url}"))
+    refused = service.run_turn(
+        {"request": "a contract bakery", "lake_url": "http://attacker.example",
+         "lake_token": "lat.task.secret"},
+        None, guard, "m", methodology_query=FakeQuery())
+    assert not refused["ok"] and "LAKE_URL is not set" in refused["error"]
+
+
+def test_the_registry_reads_go_only_to_lake_url(monkeypatch) -> None:
+    """#13: the workspace reads use LAKE_URL, never an address the turn names."""
+    from agent_autosuggest_corpus import methodologies, solutions
+
+    sent: list[str] = []
+
+    def post(url: str, token: str, body: dict) -> dict:
+        sent.append(url)
+        return {"ok": True, "value": {"methodologies": [], "solutions": []}}
+
+    monkeypatch.setenv("LAKE_URL", "http://lake:8080")
+    turn = {"lake_url": "http://attacker.example", "lake_token": "t", "customer_id": "c"}
+    methodologies.for_turn(turn, post=post)
+    solutions.for_turn(turn, post=post)
+    assert sent and all(url == "http://lake:8080/v1/workspace_query" for url in sent)

@@ -128,10 +128,15 @@ example's defects, with one retry. It answers `{reply, result: {kind: autosugges
 example}}` and **writes nothing to the corpus**; growing the corpus stays the CLI's.
 
 **The model is reached through lake** (lake#248, lake `docs/api/model-gateway.md`): in lake every
-call goes to `<lake_url>/openai/v1` with the turn's own `lake_token` as the API key (`model.py`), so
+call goes to `<LAKE_URL>/openai/v1` with the turn's own `lake_token` as the API key (`model.py`), so
 lake counts its tokens in the turn's workspace and enforces the account's model-token limit. The
 service holds no `OPENAI_API_KEY`, and a turn without a lake credential is refused. Only the batch
 CLI, which runs for no workspace, calls OpenAI directly with your own key.
+
+**A turn's credential goes only to Lake at this service's own `LAKE_URL`** (#13). The model address
+and the registry reads (`<LAKE_URL>/v1/workspace_query`) both come from `LAKE_URL`; a turn's
+`lake_url` is ignored. With `LAKE_URL` unset, or not an absolute `http(s)` URL without user info,
+every turn that would call the model is refused before any request is made.
 
 - `model.py`: the OpenAI client pointed at lake's model gateway with the turn's credential.
 - `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` reports the
