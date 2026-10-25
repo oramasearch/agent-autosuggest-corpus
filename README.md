@@ -76,7 +76,7 @@ drift.
 
 ## Status
 
-Current release: [v0.1.0](docs/releases/v0.1.0.md) (release notes for every version are in
+Current release: [v0.2.0](docs/releases/v0.2.0.md) (release notes for every version are in
 [`docs/releases/`](docs/releases/README.md)).
 
 The active v3 corpus contains one replay-validated example. The prompt and corpus moved from v2 to
