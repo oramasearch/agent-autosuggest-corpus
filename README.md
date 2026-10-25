@@ -136,6 +136,7 @@ CLI, which runs for no workspace, calls OpenAI directly with your own key.
 - `model.py`: the OpenAI client pointed at lake's model gateway with the turn's credential.
 - `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` reports the
   version and is 503 without the eval set; `POST /v1/turn`).
+  `POST /v1/turn` requires `Authorization: Bearer <AGENT_SERVICE_TOKEN>`, compared in constant time (`401` otherwise), and fails closed: with `AGENT_SERVICE_TOKEN` unset or empty it refuses every turn with `503`. The operator always sets it; set it yourself for a hand-run service. Turns from lake's bus do not use it.
 - `methodologies.py`: reads the live registry, applies the M-1 old-engine fallback, filters
   generated suggestions, and validates replayed rows.
 - `solutions.py`: reads and hydrates the live catalogue, treats an absent capability as an empty
