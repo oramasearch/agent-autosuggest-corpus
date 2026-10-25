@@ -11,12 +11,14 @@ Turns arrive on lake's agent bus (lake_bus.py); `POST /v1/turn` answers the same
 
 from __future__ import annotations
 
+import hmac
 import json
 import os
 from importlib.metadata import PackageNotFoundError, version as package_version
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from agent_autosuggest_corpus import lake_bus
 from agent_autosuggest_corpus import methodologies
@@ -41,6 +43,19 @@ def health() -> tuple[int, dict[str, Any]]:
     return (200 if guard.ids else 503,
             {"ok": bool(guard.ids), "agent": "agent-autosuggest-corpus", "version": _version(),
              "eval_profiles": len(guard.ids)})
+
+
+def lakes_url() -> str:
+    """Lake's address from this service's environment (`LAKE_URL`), the only place a turn's
+    credential is ever sent; empty when unset or not an absolute http(s) URL without user info."""
+    url = os.environ.get("LAKE_URL", "").strip().rstrip("/")
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return ""
+    if parts.scheme.lower() not in ("http", "https") or not parts.hostname or "@" in parts.netloc:
+        return ""
+    return url
 
 
 def run_turn(
@@ -83,12 +98,17 @@ def run_turn(
     model = model or os.environ.get("AUTOSUGGEST_MODEL", os.environ.get("AGENT_MODEL", "gpt-4o"))
     if client is None:
         # The model is reached through lake with the turn's own key, which counts its tokens in
-        # the turn's workspace (lake#248); this agent holds no provider key.
-        model_url = turn.get("lake_url") or os.environ.get("LAKE_URL", "")
+        # the turn's workspace (lake#248); this agent holds no provider key. The address is this
+        # service's LAKE_URL; the turn's own `lake_url` is never used, so the key cannot be sent
+        # to a host the caller names (agent-autosuggest-corpus#13).
+        model_url = lakes_url()
+        if not model_url:
+            return {"ok": False, "error": "LAKE_URL is not set: this agent sends a turn's "
+                                          "credential only to Lake's configured address"}
         model_key = turn.get("lake_token") or ""
-        if not model_url or not model_key:
-            return {"ok": False, "error": "a turn needs lake_url and its lake_token to reach the "
-                                          "model through lake"}
+        if not model_key:
+            return {"ok": False, "error": "a turn needs its lake_token to reach the model "
+                                          "through lake"}
         client = gateway_client(model_url, model_key)
     reasons: list[str] = []
     for _ in range(ATTEMPTS):
@@ -121,6 +141,22 @@ def run_turn(
     return {"ok": False, "error": "no usable example: " + "; ".join(reasons)}
 
 
+def turn_refusal(authorization: str | None, token: str) -> tuple[int, str] | None:
+    """Why `POST /v1/turn` is refused, as `(status, error)`, or None when the caller may proceed.
+
+    The route fails closed: with `AGENT_SERVICE_TOKEN` unset or empty every turn is refused, so a
+    service started without it is never open. The bearer is compared in constant time
+    (`hmac.compare_digest` over bytes), so the comparison's timing says nothing about the token.
+    """
+    if not token:
+        return 503, "AGENT_SERVICE_TOKEN is not set; this service refuses every turn"
+    expected = f"Bearer {token}".encode()
+    supplied = (authorization or "").encode("utf-8", "surrogateescape")
+    if not hmac.compare_digest(supplied, expected):
+        return 401, "unauthorized"
+    return None
+
+
 def serve() -> int:
     token = os.environ.get("AGENT_SERVICE_TOKEN", "")
 
@@ -143,8 +179,10 @@ def serve() -> int:
             if self.path != "/v1/turn":
                 self._send(404, {"ok": False, "error": "not found"})
                 return
-            if token and self.headers.get("Authorization") != f"Bearer {token}":
-                self._send(401, {"ok": False, "error": "unauthorized"})
+            refusal = turn_refusal(self.headers.get("Authorization"), token)
+            if refusal is not None:
+                status, error = refusal
+                self._send(status, {"ok": False, "error": error})
                 return
             try:
                 turn = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))

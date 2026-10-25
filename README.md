@@ -76,7 +76,7 @@ drift.
 
 ## Status
 
-Current release: [v0.1.0](docs/releases/v0.1.0.md) (release notes for every version are in
+Current release: [v0.2.0](docs/releases/v0.2.0.md) (release notes for every version are in
 [`docs/releases/`](docs/releases/README.md)).
 
 The active v3 corpus contains one replay-validated example. The prompt and corpus moved from v2 to
@@ -128,14 +128,20 @@ example's defects, with one retry. It answers `{reply, result: {kind: autosugges
 example}}` and **writes nothing to the corpus**; growing the corpus stays the CLI's.
 
 **The model is reached through lake** (lake#248, lake `docs/api/model-gateway.md`): in lake every
-call goes to `<lake_url>/openai/v1` with the turn's own `lake_token` as the API key (`model.py`), so
+call goes to `<LAKE_URL>/openai/v1` with the turn's own `lake_token` as the API key (`model.py`), so
 lake counts its tokens in the turn's workspace and enforces the account's model-token limit. The
 service holds no `OPENAI_API_KEY`, and a turn without a lake credential is refused. Only the batch
 CLI, which runs for no workspace, calls OpenAI directly with your own key.
 
+**A turn's credential goes only to Lake at this service's own `LAKE_URL`** (#13). The model address
+and the registry reads (`<LAKE_URL>/v1/workspace_query`) both come from `LAKE_URL`; a turn's
+`lake_url` is ignored. With `LAKE_URL` unset, or not an absolute `http(s)` URL without user info,
+every turn that would call the model is refused before any request is made.
+
 - `model.py`: the OpenAI client pointed at lake's model gateway with the turn's credential.
 - `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` reports the
   version and is 503 without the eval set; `POST /v1/turn`).
+  `POST /v1/turn` requires `Authorization: Bearer <AGENT_SERVICE_TOKEN>`, compared in constant time (`401` otherwise), and fails closed: with `AGENT_SERVICE_TOKEN` unset or empty it refuses every turn with `503`. The operator always sets it; set it yourself for a hand-run service. Turns from lake's bus do not use it.
 - `methodologies.py`: reads the live registry, applies the M-1 old-engine fallback, filters
   generated suggestions, and validates replayed rows.
 - `solutions.py`: reads and hydrates the live catalogue, treats an absent capability as an empty

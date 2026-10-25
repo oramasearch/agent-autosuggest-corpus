@@ -10,6 +10,7 @@ built and verified; it is never produced by a second build.
 
 | Release | Date | Summary |
 |---|---|---|
+| [v0.2.0](v0.2.0.md) | 2026-10-25 | A minor release: the service token is compared in constant time and always required (#12), and a turn's credential goes only to `LAKE_URL` (#14) |
 | [v0.1.0](v0.1.0.md) | 2026-10-17 | The first release: the corpus generator CLI and replay, the Lake library agent (`/healthz`, `/v1/turn`, the agent bus), prompt v3, the contamination guard, the methodology and solution registries, and the private image |
 
 `pyproject.toml`'s `[project].version` is the one place the version is set; `GET /healthz` reports
