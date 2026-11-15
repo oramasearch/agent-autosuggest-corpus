@@ -200,8 +200,8 @@ def test_a_turn_calls_its_model_through_lakes_gateway_with_the_turns_key(
             "usage": {"prompt_tokens": 10, "completion_tokens": 2, "total_tokens": 12}})
 
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.setattr(service, "gateway_client", lambda url, token: model.gateway_client(
-        url, token, http_client=httpx.Client(transport=httpx.MockTransport(gateway))))
+    monkeypatch.setattr(service, "gateway_client", lambda url, token, **kw: model.gateway_client(
+        url, token, http_client=httpx.Client(transport=httpx.MockTransport(gateway)), **kw))
     monkeypatch.setenv("LAKE_URL", "http://lake:8080")
     # The turn's own lake_url is never used: the key goes to this service's LAKE_URL (#13).
     answer = service.run_turn(
@@ -230,7 +230,7 @@ def test_without_a_usable_lake_url_no_turn_sends_its_credential(
     else:
         monkeypatch.setenv("LAKE_URL", lake_url)
     monkeypatch.setattr(service, "gateway_client",
-                        lambda url, token: pytest.fail(f"model called at {url}"))
+                        lambda url, token, **kw: pytest.fail(f"model called at {url}"))
     refused = service.run_turn(
         {"request": "a contract bakery", "lake_url": "http://attacker.example",
          "lake_token": "lat.task.secret"},

@@ -138,6 +138,16 @@ and the registry reads (`<LAKE_URL>/v1/workspace_query`) both come from `LAKE_UR
 `lake_url` is ignored. With `LAKE_URL` unset, or not an absolute `http(s)` URL without user info,
 every turn that would call the model is refused before any request is made.
 
+**No task credential reaches this process** (lake#871). Each claim from lake's bus asks for
+`credentials: by_reference`: Lake keeps the task's credential and answers the body with
+`lake_token` empty. It is filled with this agent's bus credential, and every call the turn makes
+to Lake (the registry reads through `workspace_query` and the model gateway) carries the header
+`X-Lake-Agent-Task: <task id>`, which Lake honours only while that task is claimed and `Running` on
+this agent (`lake_bus.task_headers`). The bus calls themselves never send it. A Lake from before
+lake#871 refuses the `credentials` field before claiming anything; the claim is then asked again
+without it, and the body's own `lake_token` is used as before, with no task header. Lake removes
+the in-body mode once every library agent claims by reference.
+
 - `model.py`: the OpenAI client pointed at lake's model gateway with the turn's credential.
 - `service.py`: `run_turn`, and `agent-autosuggest-corpus-serve` (`GET /healthz` reports the
   version and is 503 without the eval set; `POST /v1/turn`).
@@ -146,9 +156,11 @@ every turn that would call the model is refused before any request is made.
   generated suggestions, and validates replayed rows.
 - `solutions.py`: reads and hydrates the live catalogue, treats an absent capability as an empty
   catalogue, filters generated suggestions, and validates levels and composition during replay.
-- `lake_bus.py`: takes turns from lake's agent bus with its own `AGENT_BUS_TOKEN`.
+- `lake_bus.py`: takes turns from lake's agent bus with its own `AGENT_BUS_TOKEN`, claiming each by
+  reference (lake#871) and falling back to the body's credential on an older Lake.
 - `Dockerfile`: private image `oramasearch/agent-autosuggest-corpus`; the eval set is the named
   build context `evals` (`--local evals=../agent-eval-generator/evals/profiles --opt
   context:evals=local:evals`).
-- Tests: `uv run --group dev pytest`; `tests/test_release.py` requires release notes for the
+- Tests: `uv run --group dev pytest`; `tests/test_by_reference.py` covers the by-reference claim,
+  its fallback on an older Lake, and the task header on every registry read and model call (lake#871); `tests/test_release.py` requires release notes for the
   version in `pyproject.toml`, which `GET /healthz` also reports as `version`.

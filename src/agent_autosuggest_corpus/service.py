@@ -109,7 +109,8 @@ def run_turn(
         if not model_key:
             return {"ok": False, "error": "a turn needs its lake_token to reach the model "
                                           "through lake"}
-        client = gateway_client(model_url, model_key)
+        # A turn claimed by reference names its task on every model call (lake#871).
+        client = gateway_client(model_url, model_key, headers=lake_bus.task_headers(turn))
     reasons: list[str] = []
     for _ in range(ATTEMPTS):
         example, reason = generate_one(
