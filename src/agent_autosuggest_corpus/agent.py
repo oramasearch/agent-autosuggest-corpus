@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Generate the Auto-Suggest SFT corpus.
 
 One example is (profile -> project profile). The profile is invented here; the project profile is

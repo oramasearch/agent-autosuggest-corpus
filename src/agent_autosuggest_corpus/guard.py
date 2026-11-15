@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Keep the training corpus out of the eval set.
 
 `OramaSearch/agent-eval-profiles` is the TEST SET for the model this corpus trains. Training on it

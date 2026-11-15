@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Solution availability for corpus generation and replay.
 
 Lake workspaces own the solution catalogue. Every service turn reads the catalogue and then reads

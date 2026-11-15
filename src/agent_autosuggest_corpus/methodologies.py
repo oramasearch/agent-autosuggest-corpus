@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Methodology availability for corpus generation and replay.
 
 The workspace registry is authoritative and is read once for every lake turn. Standalone corpus

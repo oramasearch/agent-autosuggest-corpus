@@ -152,3 +152,9 @@ every turn that would call the model is refused before any request is made.
   context:evals=local:evals`).
 - Tests: `uv run --group dev pytest`; `tests/test_release.py` requires release notes for the
   version in `pyproject.toml`, which `GET /healthz` also reports as `version`.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Third-party components and their licenses are in
+[THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES). Contributions are welcome under the Developer
+Certificate of Origin; see [CONTRIBUTING.md](CONTRIBUTING.md).

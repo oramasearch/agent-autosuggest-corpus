@@ -1,5 +1,5 @@
 ---
-license: other
+license: mit
 tags: [sft, agent, autosuggest, synthetic]
 ---
 
@@ -59,3 +59,15 @@ Each check exists because something weak got through without it:
   skew toward whatever the model finds easy to constrain concretely.
 - **Nothing has been trained on this**, so there is no evidence it teaches what it intends to.
 - **Synthetic.** No situation is drawn from a real customer.
+
+## License and provenance
+
+The examples are synthetic. A language model wrote them (OpenAI `gpt-4o` by default, through the
+generator in this repository) from situations and registries Orama wrote; no record is drawn from
+real customer data. Orama Search Inc. releases them under the MIT License (see the repository's
+[LICENSE](../LICENSE)).
+
+The model provider's terms govern how its output may be used. OpenAI's terms assign the output to
+the user and forbid using it to develop models that compete with OpenAI
+(https://openai.com/policies/services-agreement/). Training your own model on these examples is
+your use, under those terms as they apply to you.

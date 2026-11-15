@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Solution registry transport, filtering, and corpus replay."""
 
 from __future__ import annotations
