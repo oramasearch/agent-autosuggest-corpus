@@ -150,5 +150,6 @@ every turn that would call the model is refused before any request is made.
 - `Dockerfile`: private image `oramasearch/agent-autosuggest-corpus`; the eval set is the named
   build context `evals` (`--local evals=../agent-eval-generator/evals/profiles --opt
   context:evals=local:evals`).
+- The Dockerfile pins its bases by multi-platform index digest (lake#1003): `python:3.12-slim@sha256:5e2bdb1b…` for both stages and `ghcr.io/astral-sh/uv:0.11.7@sha256:240fb85a…`. Moving one is a reviewed change of its digest.
 - Tests: `uv run --group dev pytest`; `tests/test_release.py` requires release notes for the
   version in `pyproject.toml`, which `GET /healthz` also reports as `version`.
