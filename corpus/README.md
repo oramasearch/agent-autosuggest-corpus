@@ -64,7 +64,7 @@ Each check exists because something weak got through without it:
 
 The examples are synthetic. A language model wrote them (OpenAI `gpt-4o` by default, through the
 generator in this repository) from situations and registries Orama wrote; no record is drawn from
-real customer data. Orama Search Inc. releases them under the MIT License (see the repository's
+real customer data. OramaSearch, Inc. releases them under the MIT License (see the repository's
 [LICENSE](../LICENSE)).
 
 The model provider's terms govern how its output may be used. OpenAI's terms assign the output to
