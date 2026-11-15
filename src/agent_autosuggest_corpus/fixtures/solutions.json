@@ -28,7 +28,7 @@
       ],
       "status": "catalogue",
       "runnable": true,
-      "issue": "https://github.com/oramasearch/zetta/issues/1102"
+      "issue": "zetta#1102"
     },
     {
       "id": "S-2",
@@ -56,7 +56,7 @@
       ],
       "status": "catalogue",
       "runnable": false,
-      "issue": "https://github.com/oramasearch/zetta/issues/1102"
+      "issue": "zetta#1102"
     }
   ]
 }
