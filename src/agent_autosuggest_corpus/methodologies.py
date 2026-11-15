@@ -17,6 +17,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from agent_autosuggest_corpus import lake_bus
+
 FIXTURE = Path(__file__).parent / "fixtures" / "methodologies.json"
 
 LEGACY_M1 = {
@@ -33,7 +35,9 @@ LEGACY_M1 = {
 }
 
 Query = Callable[[str, dict[str, Any]], dict[str, Any]]
-Post = Callable[[str, str, dict[str, Any]], dict[str, Any]]
+# (url, bearer, body) -> the JSON envelope; also takes `headers=` when a turn names its task
+# (lake#871), and is called without it otherwise.
+Post = Callable[..., dict[str, Any]]
 
 
 class CapabilityError(RuntimeError):
@@ -74,12 +78,18 @@ class Registry:
         )
 
 
-def _urllib_post(url: str, token: str, body: dict[str, Any]) -> dict[str, Any]:
+def _urllib_post(
+    url: str,
+    token: str,
+    body: dict[str, Any],
+    headers: dict[str, str] | None = None,
+) -> dict[str, Any]:
     request = urllib.request.Request(
         url,
         data=json.dumps(body).encode(),
         method="POST",
         headers={
+            **(headers or {}),
             "Authorization": f"Bearer {token}",
             "Accept": "application/json",
             "Content-Type": "application/json",
@@ -106,8 +116,11 @@ def make_query(
     token: str,
     customer_id: str,
     post: Post | None = None,
+    headers: dict[str, str] | None = None,
 ) -> Query:
-    """Build the read path from this agent through lake to a workspace."""
+    """Build the read path from this agent through lake to a workspace. `headers` go with every
+    call (`lake_bus.task_headers` of the turn: `X-Lake-Agent-Task` when it was claimed by
+    reference, lake#871)."""
     send = post or _urllib_post
     url = f"{lake_url.rstrip('/')}/v1/workspace_query"
 
@@ -117,7 +130,8 @@ def make_query(
             "capability": capability,
             "input": inputs,
         }
-        answer = send(url, token, body)
+        # An injected `post` is passed `headers=` only when there are any.
+        answer = send(url, token, body, **({"headers": dict(headers)} if headers else {}))
         if not isinstance(answer, dict) or not answer.get("ok"):
             error = answer.get("error") if isinstance(answer, dict) else None
             error = error if isinstance(error, dict) else {}
@@ -187,7 +201,8 @@ def for_turn(
     token = str(turn.get("lake_token") or "")
     customer_id = str(turn.get("customer_id") or "")
     if lake_url and token and customer_id:
-        return read(make_query(lake_url, token, customer_id, post))
+        return read(make_query(lake_url, token, customer_id, post,
+                               headers=lake_bus.task_headers(turn)))
     return load_fixture(fixture)
 
 

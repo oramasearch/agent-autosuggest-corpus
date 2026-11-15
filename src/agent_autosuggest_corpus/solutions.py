@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from agent_autosuggest_corpus import lake_bus
 from agent_autosuggest_corpus.methodologies import CapabilityError, Post, Query, make_query
 
 FIXTURE = Path(__file__).parent / "fixtures" / "solutions.json"
@@ -100,7 +101,8 @@ def for_turn(
     token = str(turn.get("lake_token") or "")
     customer_id = str(turn.get("customer_id") or "")
     if lake_url and token and customer_id:
-        return read(make_query(lake_url, token, customer_id, post))
+        return read(make_query(lake_url, token, customer_id, post,
+                               headers=lake_bus.task_headers(turn)))
     return load_fixture(fixture)
 
 
