@@ -2,10 +2,10 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.7",
-  "serialNumber": "urn:uuid:76365d0a-5f69-512e-9e5c-4e023f983522",
+  "serialNumber": "urn:uuid:64a498b8-8de3-59cc-b0fe-cf3db803c376",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-11-16T06:27:01Z",
+    "timestamp": "2026-11-16T07:25:57Z",
     "tools": {
       "components": [
         {
@@ -24,12 +24,12 @@
   },
   "components": [
     {
-      "bom-ref": "pkg:pypi/agent-autosuggest-corpus@0.2.0?package-id=Package-python-agent-autosuggest-corpus-aa9aa51091d5b8eb",
+      "bom-ref": "pkg:pypi/agent-autosuggest-corpus@0.3.0?package-id=Package-python-agent-autosuggest-corpus-7a7510de9dab7912",
       "type": "library",
       "name": "agent-autosuggest-corpus",
-      "version": "0.2.0",
-      "cpe": "cpe:2.3:a:python-agent-autosuggest-corpus:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*",
-      "purl": "pkg:pypi/agent-autosuggest-corpus@0.2.0",
+      "version": "0.3.0",
+      "cpe": "cpe:2.3:a:python-agent-autosuggest-corpus:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*",
+      "purl": "pkg:pypi/agent-autosuggest-corpus@0.3.0",
       "properties": [
         {
           "name": "syft:package:language",
@@ -41,191 +41,191 @@
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent-autosuggest-corpus:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent-autosuggest-corpus:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent_autosuggest_corpus:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent_autosuggest_corpus:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent_autosuggest_corpus:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent_autosuggest_corpus:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent-autosuggest-corpus:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent-autosuggest-corpus:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent-autosuggest-corpus:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent-autosuggest-corpus:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent_autosuggest_corpus:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent_autosuggest_corpus:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent_autosuggest_corpus:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent_autosuggest_corpus:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent-autosuggest-corpus:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent-autosuggest-corpus:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent-autosuggest-corpus:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent-autosuggest-corpus:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent-autosuggest:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent-autosuggest:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent-autosuggest:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent-autosuggest:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent_autosuggest:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent_autosuggest:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent_autosuggest:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent_autosuggest:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent_autosuggest_corpus:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent_autosuggest_corpus:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent_autosuggest_corpus:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent_autosuggest_corpus:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent-autosuggest-corpus:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent-autosuggest-corpus:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent-autosuggest-corpus:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent-autosuggest-corpus:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent-autosuggest:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent-autosuggest:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent-autosuggest:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent-autosuggest:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent_autosuggest:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent_autosuggest:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent_autosuggest:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent_autosuggest:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent_autosuggest_corpus:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent_autosuggest_corpus:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent_autosuggest_corpus:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent_autosuggest_corpus:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent-autosuggest:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent-autosuggest:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent-autosuggest:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent-autosuggest:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent_autosuggest:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent_autosuggest:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent_autosuggest:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent_autosuggest:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent-autosuggest:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent-autosuggest:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent-autosuggest:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent-autosuggest:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent_autosuggest:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent_autosuggest:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent_autosuggest:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent_autosuggest:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent:python-agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent:python-agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent:python_agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent:python_agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python-agent:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python-agent:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python_agent:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python_agent:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:python:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:python:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent:agent-autosuggest-corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent:agent-autosuggest-corpus:0.3.0:*:*:*:*:*:*:*"
         },
         {
           "name": "syft:cpe23",
-          "value": "cpe:2.3:a:agent:agent_autosuggest_corpus:0.2.0:*:*:*:*:*:*:*"
+          "value": "cpe:2.3:a:agent:agent_autosuggest_corpus:0.3.0:*:*:*:*:*:*:*"
         }
       ]
     },
@@ -233,7 +233,7 @@
       "bom-ref": "DocumentRoot",
       "type": "library",
       "name": "agent-autosuggest-corpus",
-      "version": "59c26f41c385",
+      "version": "v0.3.0",
       "licenses": [
         {
           "license": {
@@ -1816,7 +1816,7 @@
       ]
     },
     {
-      "ref": "pkg:pypi/agent-autosuggest-corpus@0.2.0?package-id=Package-python-agent-autosuggest-corpus-aa9aa51091d5b8eb",
+      "ref": "pkg:pypi/agent-autosuggest-corpus@0.3.0?package-id=Package-python-agent-autosuggest-corpus-7a7510de9dab7912",
       "dependsOn": [
         "pkg:pypi/httpx@0.28.1?package-id=Package-python-httpx-b8665b7937415e27",
         "pkg:pypi/openai@2.53.0?package-id=Package-python-openai-1181bc5571c73bdc",
