@@ -1,6 +1,6 @@
 [project]
 name = "agent-autosuggest-corpus"
-version = "0.2.0"
+version = "0.3.0"
 description = "Generates and checks the SFT training corpus for the Auto-Suggest model, kept apart from its eval set; also a Lake library agent"
 license = "MIT"
 readme = "README.md"

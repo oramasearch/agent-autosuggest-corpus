@@ -10,6 +10,7 @@ built and verified; it is never produced by a second build.
 
 | Release | Date | Summary |
 |---|---|---|
+| [v0.3.0](v0.3.0.md) | 2026-11-16 | A minor release: the licence, the security policy, base images pinned by digest and the public-tree cleanup |
 | [v0.2.0](v0.2.0.md) | 2026-10-25 | A minor release: the service token is compared in constant time and always required, and a turn's credential goes only to `LAKE_URL` |
 | [v0.1.0](v0.1.0.md) | 2026-10-17 | The first release: the corpus generator CLI and replay, the Lake library agent (`/healthz`, `/v1/turn`, the agent bus), prompt v3, the contamination guard, the methodology and solution registries, and the image |
 
