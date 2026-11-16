@@ -1,4 +1,6 @@
 # syntax=docker/dockerfile:1
+# SPDX-License-Identifier: MIT
+
 # The Auto-Suggest Corpus Generator as a lake library agent (lake#263): private on Docker Hub as
 # oramasearch/agent-autosuggest-corpus. The eval set is a named build context, `evals`
 # (agent-eval-generator/evals/profiles): without it the contamination guard cannot run, and the

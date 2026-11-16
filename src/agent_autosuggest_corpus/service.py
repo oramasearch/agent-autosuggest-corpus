@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """The Auto-Suggest Corpus Generator as a lake library agent (lake#263): one example per turn.
 
 A person asks for a training example for Auto-Suggest ("a quality manager at a contract bakery").

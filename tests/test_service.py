@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """The corpus generator as a lake library agent: one checked example per request."""
 
 from __future__ import annotations
