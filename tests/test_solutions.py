@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Solution registry transport, filtering, and corpus replay."""
 
 from __future__ import annotations
@@ -92,7 +94,7 @@ def test_a_sketch_is_declined_without_an_invented_level() -> None:
         "capability_levels": [],
         "status": "sketch",
         "runnable": False,
-        "issue": "https://github.com/oramasearch/zetta/issues/1102",
+        "issue": "zetta#1102",
         "promotion_condition": "controlled price experiments are permitted",
     }
     candidate = copy.deepcopy(EXAMPLE)

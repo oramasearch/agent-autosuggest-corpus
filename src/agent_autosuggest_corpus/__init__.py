@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Auto-Suggest training corpus agent."""
 
 __all__ = ["main"]

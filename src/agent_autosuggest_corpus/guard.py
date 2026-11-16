@@ -1,6 +1,8 @@
+# SPDX-License-Identifier: MIT
+
 """Keep the training corpus out of the eval set.
 
-`OramaSearch/agent-eval-profiles` is the TEST SET for the model this corpus trains. Training on it
+The eval profiles (agent-eval-generator's `evals/profiles/`, passed as `EVAL_PROFILES`) are the TEST SET for the model this corpus trains. Training on it
 makes every eval score meaningless: the model would be scored on situations it had memorised, and
 nobody could tell a model that reads data from one that recalls an answer key.
 

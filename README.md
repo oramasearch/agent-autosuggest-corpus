@@ -1,14 +1,14 @@
 # agent-autosuggest-corpus
 
-Generates the **SFT training corpus for the Auto-Suggest model**
-([zetta#986](https://github.com/oramasearch/zetta/issues/986)).
+Generates the **SFT training corpus for the Auto-Suggest model**.
 
 Auto-Suggest reads a **profile** — a situation plus its data — and proposes what is worth
 building. This repo produces the examples that teach it to do that.
 
 ## The rule that matters most
 
-**Never read from `OramaSearch/agent-eval-profiles`.**
+**Never train on the eval profiles** (`agent-eval-generator`'s `evals/profiles/`, given to this
+generator as `EVAL_PROFILES`).
 
 Those profiles are the **test set** for this exact model. Training on them makes every eval score
 meaningless — the model would be scored on situations it had memorised, and we would have no way
@@ -76,7 +76,7 @@ drift.
 
 ## Status
 
-Current release: [v0.2.0](docs/releases/v0.2.0.md) (release notes for every version are in
+Current release: [v0.3.0](docs/releases/v0.3.0.md) (release notes for every version are in
 [`docs/releases/`](docs/releases/README.md)).
 
 The active v3 corpus contains one replay-validated example. The prompt and corpus moved from v2 to
@@ -119,7 +119,7 @@ Replay the active corpus against the fixture with:
 uv run agent-autosuggest-corpus --replay corpus/autosuggest-sft-v3.jsonl
 ```
 
-## In lake (lake#263)
+## In lake
 
 A library agent of lake: a person asks it for one training example ("a quality manager at a
 contract bakery"). One turn is one `generate_one` (the loop body of the CLI), steered by the request
@@ -133,7 +133,7 @@ lake counts its tokens in the turn's workspace and enforces the account's model-
 service holds no `OPENAI_API_KEY`, and a turn without a lake credential is refused. Only the batch
 CLI, which runs for no workspace, calls OpenAI directly with your own key.
 
-**A turn's credential goes only to Lake at this service's own `LAKE_URL`** (#13). The model address
+**A turn's credential goes only to Lake at this service's own `LAKE_URL`**. The model address
 and the registry reads (`<LAKE_URL>/v1/workspace_query`) both come from `LAKE_URL`; a turn's
 `lake_url` is ignored. With `LAKE_URL` unset, or not an absolute `http(s)` URL without user info,
 every turn that would call the model is refused before any request is made.
@@ -150,5 +150,15 @@ every turn that would call the model is refused before any request is made.
 - `Dockerfile`: private image `oramasearch/agent-autosuggest-corpus`; the eval set is the named
   build context `evals` (`--local evals=../agent-eval-generator/evals/profiles --opt
   context:evals=local:evals`).
+- The Dockerfile pins its bases by multi-platform index digest (lake#1003): `python:3.12-slim@sha256:5e2bdb1b…` for both stages and `ghcr.io/astral-sh/uv:0.11.7@sha256:240fb85a…`. Moving one is a reviewed change of its digest.
+- `Dockerfile`: the image `oramasearch/agent-autosuggest-corpus`; the eval set is the named
+  build context `evals` (`docker buildx build --build-context
+  evals=../agent-eval-generator/evals/profiles ...`).
 - Tests: `uv run --group dev pytest`; `tests/test_release.py` requires release notes for the
   version in `pyproject.toml`, which `GET /healthz` also reports as `version`.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Third-party components and their licenses are in
+[THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES). Contributions are welcome under the
+[Contributor License Agreement](CLA.md); see [CONTRIBUTING.md](CONTRIBUTING.md).

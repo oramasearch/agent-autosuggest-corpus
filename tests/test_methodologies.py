@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Methodology registry transport and corpus replay."""
 
 from __future__ import annotations
